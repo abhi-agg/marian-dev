@@ -134,7 +134,7 @@ private:
   }
 
   // Used to find elements if isMap() is true.
-  inline const std::unique_ptr<const FastOpt>& phLookup(size_t keyId) const {
+  inline const std::unique_ptr<const FastOpt>& phLookup(uint64_t keyId) const {
     if(ph_)
       return array_[(*ph_)[keyId]];
     else
@@ -223,7 +223,7 @@ private:
     type_ = NodeType::Map;
   }
 
-  // Build a Map node, uses std::string as key, which gets hashed to size_t and used in the function above.
+  // Build a Map node, uses std::string as key, which gets hashed to uint64_t and used in the function above.
   void makeMap(const std::map<std::string, YAML::Node>& m) {
     std::map<uint64_t, YAML::Node> mi;
     for(const auto& it : m) {
@@ -324,7 +324,7 @@ public:
   }
 
   // Is the hashed key in a map? 
-  bool has(size_t keyId) const {
+  bool has(uint64_t keyId) const {
     if(isMap() && elements_ > 0) {
       const auto& ptr = phLookup(keyId);
       return ptr ? ptr->fingerprint_ == keyId : false;
@@ -348,9 +348,9 @@ public:
   }
 
   // access sequence or map element
-  const FastOpt& operator[](size_t keyId) const {
+  const FastOpt& operator[](uint64_t keyId) const {
     if(isSequence()) {
-      const auto& ptr = arrayLookup(keyId);
+      const auto& ptr = arrayLookup((size_t)keyId);
       ABORT_IF(!ptr, "Unseen key {}" , keyId);
       return *ptr;
     } else if(isMap()) {
@@ -363,12 +363,11 @@ public:
   }
 
   const FastOpt& operator[](int key) const {
-    return operator[]((size_t)key);
+    return operator[]((uint64_t)key);
   }
 
   const FastOpt& operator[](const char* const key) const {
-    // MacOS requires explicit cast to size_t before we can use it.
-    return operator[]((size_t)crc::crc(key));
+    return operator[](crc::crc(key));
   }
 
   const FastOpt& operator[](const std::string& key) const {
