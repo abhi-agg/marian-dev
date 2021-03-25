@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Integrate a shortlist converter (which can convert a text lexical shortlist to a binary shortlist) into marian-conv with --shortlist option
 - Added ONNXJS submodule to use its wasm-compatible sgemm routine for wasm builds
 - Enable compiling marian on wasm platform
+- Added a cmake option that encapsulates only those marian sources that compile for wasm
 
 ### Fixed
 - Segfault of spm_train when compiled with -DUSE_STATIC_LIBS=ON seems to have gone away with update to newer SentencePiece version.
