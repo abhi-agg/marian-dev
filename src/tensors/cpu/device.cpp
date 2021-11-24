@@ -13,6 +13,7 @@ void Device::reserve(size_t size) {
   ABORT_IF(size < size_ || size == 0,
            "New size must be larger than old size and larger than 0");
 
+  LOG(info, "Device::reserve - alignment_:{}", alignment_);
   uint8_t *temp = static_cast<uint8_t*>(genericMalloc(alignment_, size));
   if(data_) {
     std::copy(data_, data_ + size_, temp);

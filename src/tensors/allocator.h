@@ -163,6 +163,7 @@ public:
         available_(0),
         step_(step),
         alignment_(alignment) {
+    LOG(info, "Allocator 1: alignment:{} alignment_:{}", alignment, alignment_);
     reserve(bytes);
   }
 
@@ -172,6 +173,7 @@ public:
             size_t step,
             size_t alignment = 256)
       : device_(device), available_(0), step_(step), alignment_(alignment) {
+    LOG(info, "Allocator 2: alignment:{} alignment_:{}", alignment, alignment_);
     reserve(bytes);
   }
 
