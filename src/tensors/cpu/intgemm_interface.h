@@ -501,12 +501,14 @@ public:
               computeAlignment((void*)(reinterpret_cast<int8_t *>(child(1)->val()->data()))),
               computeAlignment((void*)(child(2)->val()->data())),
               computeAlignment((void*)(val_->data())));
-          int8MultiplyAndAddBias(reinterpret_cast<int8_t *>(child(0)->val()->data()), /*A*/
-                                aQuantMult, /*Scale of A*/
-                                0, /*zero point of A*/
-                                reinterpret_cast<int8_t *>(child(1)->val()->data()), /*B*/
-                                bQuantMult, /*Scale of B*/
-                                0, /*zero point of B*/
+          PreparedStruct aPreparedStruct = {reinterpret_cast<int8_t *>(child(0)->val()->data()), aQuantMult, 0.0 /*A*/};
+          PreparedStruct bPreparedStruct = {reinterpret_cast<int8_t *>(child(1)->val()->data()), bQuantMult, 0.0 /*A*/};
+          int8MultiplyAndAddBias(&aPreparedStruct,//reinterpret_cast<int8_t *>(child(0)->val()->data()), /*A*/
+                                //aQuantMult, /*Scale of A*/
+                                //0, /*zero point of A*/
+                                &bPreparedStruct,//reinterpret_cast<int8_t *>(child(1)->val()->data()), /*B*/
+                                //bQuantMult, /*Scale of B*/
+                                //0, /*zero point of B*/
                                 child(2)->val()->data(), /*child(2) is bias*/
                                 scalar_,
                                 rows(child(0)->val()),

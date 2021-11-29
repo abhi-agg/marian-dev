@@ -71,21 +71,21 @@ extern "C" void int8PrepareBiasFallback(const int8_t* input_B_prepared,
       intgemm::callbacks::UnquantizeAndAddBiasAndWrite(unquant_factor, input_bias, output));
 }
 
-extern "C" void int8MultiplyAndAddBiasFallback(const int8_t* input_A_prepared,
+extern "C" void int8MultiplyAndAddBiasFallback(PreparedStruct* input_A_prepared,/*const int8_t* input_A_prepared,
                                                float scale_A,
-                                               float zero_point_A,
-                                               const int8_t* input_B_prepared,
+                                               float zero_point_A,*/
+                                               PreparedStruct* input_B_prepared,/*const int8_t* input_B_prepared,
                                                float scale_B,
-                                               float zero_point_B,
+                                               float zero_point_B,*/
                                                const float* input_bias_prepared,
                                                float unquant_multiplier,
                                                Index rows_A,
                                                Index width,
                                                Index cols_B,
                                                float* output) {
-  float unquant_factor = unquant_multiplier / (scale_A * scale_B);
-  intgemm::Int8Shift::Multiply(input_A_prepared,
-                               input_B_prepared,
+  float unquant_factor = unquant_multiplier / (input_A_prepared->scale * input_B_prepared->scale);
+  intgemm::Int8Shift::Multiply(input_A_prepared->quantized,
+                               input_B_prepared->quantized,
                                rows_A,
                                width,
                                cols_B,

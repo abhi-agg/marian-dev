@@ -47,6 +47,12 @@
 
 using Index = uint32_t;
 
+typedef struct PreparedStruct {
+    int8_t* quantized;
+    float scale;
+    float zero_point;
+} PreparedStruct;
+
 /**
  * Prepare B for the Matrix Multiply function from Input matrix B.
  *
@@ -228,12 +234,8 @@ int8PrepareBias(const int8_t* input_B_prepared,
  */
 extern "C" void
     __attribute__((import_module("wasm_gemm"), import_name("int8_multiply_and_add_bias")))
-    int8MultiplyAndAddBias(const int8_t* input_A_prepared,
-                           float scale_A,
-                           float zero_point_A,
-                           const int8_t* input_B_prepared,
-                           float scale_B,
-                           float zero_point_B,
+    int8MultiplyAndAddBias(PreparedStruct* input_A_prepared,
+                           PreparedStruct* input_B_prepared,
                            const float* input_bias_prepared,
                            float unquant_multiplier,
                            Index rows_A,
