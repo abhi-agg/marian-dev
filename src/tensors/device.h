@@ -22,7 +22,7 @@ protected:
 public:
   Device(DeviceId deviceId, size_t alignment = 256)
       : deviceId_(deviceId), alignment_(alignment) {
-        LOG(info, "Device::Device - alignment:{} alignment_:{}", alignment, alignment_);
+        LOG(info, "Device::Device - alignment:{}", alignment);
   }
 
   virtual ~Device(){};

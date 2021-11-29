@@ -3,6 +3,32 @@
 namespace marian {
 namespace cpu {
 namespace integer {
+
+size_t computeAlignment(void* address) {
+  auto ptr = reinterpret_cast<std::uintptr_t>(address);
+    if ((ptr % 512) == 0) {
+      return 512;
+    } else if ((ptr % 256) == 0) {
+      return 256;
+    } else if ((ptr % 128) == 0) {
+      return 128;
+    } else if ((ptr % 64) == 0) {
+      return 64;
+    } else if ((ptr % 32) == 0) {
+      return 32;
+    } else if ((ptr % 16) == 0) {
+      return 16;
+    } else if ((ptr % 8) == 0) {
+      return 8;
+    } else if ((ptr % 4) == 0) {
+      return 4;
+    } else if ((ptr % 2) == 0) {
+      return 2;
+    } else {
+      return 1;
+    }
+}
+
 // This operates on floats after processing so doesn't care about int8_t vs int16_t.
 void AddBias(marian::Tensor C, const marian::Tensor Bias) {
   float* y = C->data();

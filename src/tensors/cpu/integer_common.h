@@ -20,6 +20,8 @@ namespace marian {
 namespace cpu {
 namespace integer {
 
+size_t computeAlignment(void* address);
+
 //Convenient function to get rows and columns of a tensor, shadowed by namespace.
 inline int cols(Tensor& tensor) { return tensor->shape()[-1]; }
 inline int rows(Tensor& tensor) { return tensor->shape().elements() / cols(tensor); }
@@ -51,6 +53,13 @@ void prepareAndTransposeB(io::Item& item, const char * input) {
     #if defined(WASM)
         ABORT_IF(intgemm_<vtype>::intgemmType == Type::intgemm16,
                 "Int16::PrepareBQuantizedTransposed is not implemented for wasm.");
+        LOG(info, "PrepareBQuantizedTransposed        : Bqt:{}   width:{}   colsB:{}   Bp:{}   Bqt_align:{}   Bp_align:{}",
+          (void*)(reinterpret_cast<const int8_t *>(input)),
+          rows(item.shape),
+          cols(item.shape),
+          (void*)output_tensor,
+          computeAlignment((void*)(reinterpret_cast<const int8_t *>(input))),
+          computeAlignment((void*)output_tensor));
         int8PrepareBFromQuantizedTransposed(reinterpret_cast<const int8_t *>(input),
                                         (Index)rows(item.shape),  //Since we only transposed, but didn't update the shape when constructing the binary 
                                         (Index)cols(item.shape), //rows here returns the columns of the transposed input matrix, and cols -> the rows
@@ -68,6 +77,15 @@ void prepareAndTransposeB(io::Item& item, const char * input) {
     #if defined(WASM)
         ABORT_IF(intgemm_<vtype>::intgemmType == Type::intgemm16,
                 "Int16::PrepareBQuantizedTransposed is not implemented for wasm.");
+        LOG(info, "PrepareBQuantizedTransposed Aligned: Bqt:{}   width:{}   colsB:{}   Bp:{}   Bp_final:{}   Bqt_align:{}   Bp_align:{}  Bp_final_align:{}",
+          (void*)(reinterpret_cast<const int8_t *>(aligned_input)),
+          rows(item.shape),
+          cols(item.shape),
+          (void*)(reinterpret_cast<int8_t *>(aligned_output)),
+          (void*)output_tensor,
+          computeAlignment((void*)(reinterpret_cast<const int8_t *>(aligned_input))),
+          computeAlignment((void*)(reinterpret_cast<int8_t *>(aligned_output))),
+          computeAlignment((void*)output_tensor));
         int8PrepareBFromQuantizedTransposed(reinterpret_cast<const int8_t *>(aligned_input),
                                         (Index)rows(item.shape),  //Since we only transposed, but didn't update the shape when constructing the binary, 
                                         (Index)cols(item.shape), //rows here returns the columns of the transposed input matrix, and cols -> the rows

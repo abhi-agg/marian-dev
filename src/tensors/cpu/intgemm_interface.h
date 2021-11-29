@@ -36,11 +36,13 @@ bool shifted_;
       ABORT_IF(intgemm_<vtype>::intgemmType == Type::intgemm16,
         "Int16::PrepareA is not implemented for wasm.");
       ABORT_IF(!shifted_, "Int8::PrepareA is not implemented for wasm. Please use shifted version.");
-      LOG(info, "PrepareANodeOp : A:{} rows:{} width:{} output:{}",
-          child(0)->val()->data(),
+      LOG(info, "PrepareANodeOp: A:{}   rowsA:{}   width:{}   Ap:{}   A_align:{}   Ap_align:{}",
+          (void*)(child(0)->val()->data()),
           rows(child(0)->val()),
           cols(child(0)->val()),
-          val_->data<int8_t>());
+          (void*)val_->data<int8_t>(),
+          computeAlignment((void*)(child(0)->val()->data())),
+          computeAlignment((void*)val_->data<int8_t>()));
       int8PrepareA(child(0)->val()->data(), // input
                   *child(1)->val()->data(), // Scale
                   0, // zero point
@@ -102,6 +104,13 @@ float quantMult_;
 #if defined(WASM)
         ABORT_IF(intgemm_<vtype>::intgemmType == Type::intgemm16,
                 "Int16::PrepareB is not implemented for wasm.");
+        LOG(info, "PrepareBNodeOp: B:{}   width:{}   colsB:{}   Bp:{}   B_align:{}   Bp_align:{}",
+          (void*)(child(0)->val()->data()),
+          rows(child(0)->val()),
+          cols(child(0)->val()),
+          (void*)(val_->data<int8_t>()),
+          computeAlignment((void*)(child(0)->val()->data())),
+          computeAlignment((void*)(val_->data<int8_t>())));
         int8PrepareB(child(0)->val()->data(), //input
                     *child(1)->val()->data(), //Scale
                     0, //Zero point
@@ -314,6 +323,15 @@ public:
     #if defined(WASM)
         float scale_a = *quant_mult_a->data();
         float scale_b = *quant_mult_b->data();
+        LOG(info, "PrepareBias: Bp:{}   width:{}   colsB:{}   Bias:{}   Bias_p:{}   Bp_align:{}   Bias_align:{}   Bias_p_align:{}",
+          (void*)(b->data()),
+          rows(b),
+          cols(b),
+          (void*)(bias->data()),
+          (void*)(val_->data()),
+          computeAlignment((void*)(b->data())),
+          computeAlignment((void*)(bias->data())),
+          computeAlignment((void*)(val_->data())));
         int8PrepareBias((const int8_t *)b->data(), scale_a, 0.0 /*zero_point_a*/, scale_b, 0.0 /*zero_point_b*/, rows(b), cols(b), bias->data(), val_->data());
     #else
         float unquant_mult = (-1)*((127.0f / *quant_mult_a->data())*(127.0f / *quant_mult_b->data()))/(127.0f); //Minus one to invert add_ps later on
@@ -351,6 +369,13 @@ public:
   #if defined(WASM)
     float scale_a = *quant_mult_a->data();
     float scale_b = *quant_mult_b->data();
+    LOG(info, "PrepareFakeBias: Bp:{}   width:{}   colsB:{}   Bias_p:{}   Bp_align:{}   Bias_p_align:{}",
+      (void*)(b->data()),
+      rows(b),
+      cols(b),
+      (void*)(val_->data()),
+      computeAlignment((void*)(b->data())),
+      computeAlignment((void*)(val_->data())));
     int8PrepareBias((const int8_t *)b->data(), scale_a, 0.0 /*zero_point_a*/, scale_b, 0.0 /*zero_point_b*/, rows(b), cols(b), nullptr/*input_bias*/, val_->data());
   #else
     float unquant_mult = (-1)*((127.0f / *quant_mult_a->data())*(127.0f / *quant_mult_b->data()))/(127.0f); //Minus one to invert add_ps later on
@@ -464,14 +489,18 @@ public:
           ABORT_IF(intgemm_<vtype>::intgemmType == Type::intgemm16,
             "Int16::Multiply is not implemented for wasm.");
           ABORT_IF(!shifted_, "Int8::Multiply is not implemented for wasm.");
-          LOG(info, "AffineNodeOp: A:{} B:{} Bias:{} rows:{} width:{} cols:{} output:{}",
-              reinterpret_cast<int8_t *>(child(0)->val()->data()),
-              reinterpret_cast<int8_t *>(child(1)->val()->data()),
-              child(2)->val()->data(),
+          LOG(info, "AffineNodeOp: Ap:{}   Bp:{}   Bias_p:{}   rowsA:{}   width:{}   colsB:{}   output:{}   Ap_align:{}   Bp_align:{}   Bias_p_align:{}   output_align:{}",
+              (void*)(reinterpret_cast<int8_t *>(child(0)->val()->data())),
+              (void*)(reinterpret_cast<int8_t *>(child(1)->val()->data())),
+              (void*)(child(2)->val()->data()),
               rows(child(0)->val()),
               cols(child(0)->val()),
-              cols(child(1)->val())
-              val_->data());
+              cols(child(1)->val()),
+              (void*)(val_->data()),
+              computeAlignment((void*)(reinterpret_cast<int8_t *>(child(0)->val()->data()))),
+              computeAlignment((void*)(reinterpret_cast<int8_t *>(child(1)->val()->data()))),
+              computeAlignment((void*)(child(2)->val()->data())),
+              computeAlignment((void*)(val_->data())));
           int8MultiplyAndAddBias(reinterpret_cast<int8_t *>(child(0)->val()->data()), /*A*/
                                 aQuantMult, /*Scale of A*/
                                 0, /*zero point of A*/

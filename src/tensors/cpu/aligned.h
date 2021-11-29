@@ -31,6 +31,7 @@ void *genericMalloc(size_t alignment, size_t size) {
   void *result;
   // Error could be detected by return value or just remaining nullptr.
   ABORT_IF(posix_memalign(&result, alignment, size), "Failed to allocate memory on CPU");
+  LOG(info, "genericMalloc - alignment:{}", alignment);
   return result;
 }
 void genericFree(void *ptr) {
