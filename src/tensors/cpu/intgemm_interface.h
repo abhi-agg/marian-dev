@@ -489,18 +489,21 @@ public:
           ABORT_IF(intgemm_<vtype>::intgemmType == Type::intgemm16,
             "Int16::Multiply is not implemented for wasm.");
           ABORT_IF(!shifted_, "Int8::Multiply is not implemented for wasm.");
-          LOG(info, "AffineNodeOp: Ap:{}   Bp:{}   Bias_p:{}   rowsA:{}   width:{}   colsB:{}   output:{}   Ap_align:{}   Bp_align:{}   Bias_p_align:{}   output_align:{}",
+          LOG(info, "AffineNodeOp: Ap:{}  scaleA:{}  zeroPointA:0  Bp:{}  scaleB:{}  zeroPointB:0   Bias_p:{}  unquantMultiplier:{}  rowsA:{}   width:{}   colsB:{}   output:{}",//   Ap_align:{}   Bp_align:{}   Bias_p_align:{}   output_align:{}",
               (void*)(reinterpret_cast<int8_t *>(child(0)->val()->data())),
+              aQuantMult,
               (void*)(reinterpret_cast<int8_t *>(child(1)->val()->data())),
+              bQuantMult,
               (void*)(child(2)->val()->data()),
+              scalar_,
               rows(child(0)->val()),
               cols(child(0)->val()),
               cols(child(1)->val()),
-              (void*)(val_->data()),
+              (void*)(val_->data())/*,
               computeAlignment((void*)(reinterpret_cast<int8_t *>(child(0)->val()->data()))),
               computeAlignment((void*)(reinterpret_cast<int8_t *>(child(1)->val()->data()))),
               computeAlignment((void*)(child(2)->val()->data())),
-              computeAlignment((void*)(val_->data())));
+              computeAlignment((void*)(val_->data()))*/);
           int8MultiplyAndAddBias(reinterpret_cast<int8_t *>(child(0)->val()->data()), /*A*/
                                 aQuantMult, /*Scale of A*/
                                 0, /*zero point of A*/
